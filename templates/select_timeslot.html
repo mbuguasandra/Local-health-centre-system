@@ -1,0 +1,49 @@
+{% include "nav/header_receptionists.html" %}
+
+<div class="container-xxl flex-grow-1 container-p-y">
+  <h4 class="fw-bold py-3 mb-4">
+    <span class="text-muted fw-light">Book</span> Appointment
+  </h4>
+
+  <!-- Display Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="row">
+    <div class="col-xxl">
+      <div class="card mb-4">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <h5 class="mb-0">Booking Appointment</h5>
+        </div>
+        <div class="card-body">
+
+          <form method="POST" action="/confirm_booking">
+    <input type="hidden" name="appointment_date" value="{{ request.form.get('appointment_date') }}">
+    {% for start, end in timeslots %}
+    <label>
+        <input type="radio" name="selected_time" value="{{ start }}" required>
+        {{ start }} - {{ end }}
+    </label><br>
+    {% endfor %}
+    <button type="submit">Confirm Booking</button>
+</form>
+
+
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% include "nav/footer.html" %}

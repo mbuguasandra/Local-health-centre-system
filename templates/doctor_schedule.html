@@ -1,0 +1,177 @@
+{% include "nav/header.html" %}
+
+
+
+<div class="container-xxl flex-grow-1 container-p-y">
+    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Doctor</span> Schedule Form</h4>
+
+    <!-- Display Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="alert-container">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+<form method="POST">
+    <div class="card mb-4">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <h5 class="mb-0">Doctor Schedule</h5>
+        </div>
+        <div class="card-body">
+            <!-- Add New Schedule -->
+            <div class="mb-3">
+                <label for="available_date" class="form-label">Available Date</label>
+                <input type="date" name="available_date" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label for="available_from" class="form-label">Available From</label>
+                <input type="time" name="available_from" class="form-control" value="08:00">
+            </div>
+            <div class="mb-3">
+                <label for="available_to" class="form-label">Available To</label>
+                <input type="time" name="available_to" class="form-control" value="17:00">
+            </div>
+
+            <div class="mb-3">
+                <button type="button" class="btn btn-info" id="add-schedule">Add Schedule</button>
+            </div>
+
+            <!-- Table to display the schedules -->
+            <table class="table table-bordered" id="schedule-table">
+                <thead>
+                    <tr>
+                        <th>Available Date</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Schedule entries will be added here dynamically -->
+                </tbody>
+            </table>
+
+            <!-- Hidden field to store schedule data -->
+            <input type="hidden" name="schedule_data" id="schedule_data">
+
+            <div class="row justify-content-end">
+                <div class="col-sm-10">
+                    <button type="submit" class="btn btn-primary">Submit Schedule</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+</div>
+
+<!-- Modal to Edit Schedule -->
+<div class="modal fade" id="editScheduleModal" tabindex="-1" aria-labelledby="editScheduleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editScheduleModalLabel">Edit Schedule</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+            <label for="edit_available_from" class="form-label">Available From</label>
+            <input type="time" id="edit_available_from" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="edit_available_to" class="form-label">Available To</label>
+            <input type="time" id="edit_available_to" class="form-control">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="save-edited-schedule">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+    let scheduleData = [];
+
+    // Add schedule to the table
+    document.getElementById('add-schedule').addEventListener('click', function() {
+        const availableDate = document.querySelector('[name="available_date"]').value;
+        const availableFrom = document.querySelector('[name="available_from"]').value;
+        const availableTo = document.querySelector('[name="available_to"]').value;
+
+        if (availableDate && availableFrom && availableTo) {
+            const newSchedule = { availableDate, availableFrom, availableTo };
+            scheduleData.push(newSchedule);
+
+            // Update table
+            updateScheduleTable();
+
+            // Clear input fields
+            document.querySelector('[name="available_date"]').value = '';
+            document.querySelector('[name="available_from"]').value = '08:00';  // Default to 8:00 AM
+            document.querySelector('[name="available_to"]').value = '17:00';
+        } else {
+            alert("Please fill in all fields.");
+        }
+    });
+
+    // Update the schedule table
+    function updateScheduleTable() {
+        const tbody = document.querySelector('#schedule-table tbody');
+        tbody.innerHTML = '';  // Clear existing table rows
+
+        scheduleData.forEach((schedule, index) => {
+            const row = document.createElement('tr');
+
+            row.innerHTML = `
+                <td>${schedule.availableDate}</td>
+                <td>${schedule.availableFrom}</td>
+                <td>${schedule.availableTo}</td>
+                <td>
+                    <button type="button" class="btn btn-warning" onclick="editSchedule(${index})">Edit</button>
+                    <button type="button" class="btn btn-danger" onclick="deleteSchedule(${index})">Delete</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        // Update the hidden input field with the schedule data as a JSON string
+        document.getElementById('schedule_data').value = JSON.stringify(scheduleData);
+    }
+
+    // Edit a schedule
+    function editSchedule(index) {
+        const schedule = scheduleData[index];
+        document.getElementById('edit_available_from').value = schedule.availableFrom;
+        document.getElementById('edit_available_to').value = schedule.availableTo;
+
+        // Save edited schedule
+        document.getElementById('save-edited-schedule').onclick = function() {
+            scheduleData[index].availableFrom = document.getElementById('edit_available_from').value;
+            scheduleData[index].availableTo = document.getElementById('edit_available_to').value;
+
+            // Close modal and update table
+            $('#editScheduleModal').modal('hide');
+            updateScheduleTable();
+        };
+
+        // Open modal
+        $('#editScheduleModal').modal('show');
+    }
+
+    // Delete a schedule
+    function deleteSchedule(index) {
+        scheduleData.splice(index, 1);
+        updateScheduleTable();
+    }
+</script>
+
+
+{% include "nav/footer.html" %}

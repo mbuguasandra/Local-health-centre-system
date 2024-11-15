@@ -1,0 +1,15 @@
+{% include "nav/header_receptionists.html" %}
+
+<h2>Current Doctor: {{ doctor_name }}</h2>
+<form method="POST" action="/doctor_availability">
+    <select name="doctor_id">
+        {% for doctor in doctors %}
+        <option value="{{ doctor['doctor_id'] }}" {% if doctor['doctor_id'] == session['registered_doctor_id'] %} selected {% endif %}>{{ doctor['name'] }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Choose</button>
+</form>
+
+
+
+{% include "nav/footer.html" %}

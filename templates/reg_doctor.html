@@ -1,0 +1,114 @@
+{% include "nav/header_receptionists.html" %}
+
+
+
+
+  <div class="container-xxl flex-grow-1 container-p-y">
+    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Doctor</span> registration form</h4>
+
+    <!-- Display Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="alert-container">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <div class="col-xxl">
+            <div class="card mb-4">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0">Doctor Registration</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row mb-3">
+                            <label class="col-sm-2 col-form-label" for="name">Name</label>
+                            <div class="col-sm-10">
+                                <input type="text" name="name" class="form-control" id="name" placeholder="John Doe" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-2 col-form-label" for="email">Email</label>
+                            <div class="col-sm-10">
+                                <input type="email" name="email" class="form-control" id="email" placeholder="john.doe@example.com" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-2 col-form-label" for="contact_number">Phone No</label>
+                            <div class="col-sm-10">
+                                <input type="text" name="contact_number" class="form-control" id="contact_number" placeholder="658 799 8941" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-2 col-form-label" for="password">Password</label>
+                            <div class="col-sm-10">
+                                <input type="password" name="password" class="form-control" id="password" placeholder="******" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-2 col-form-label" for="department">Department</label>
+                            <div class="col-sm-10">
+                                <select name="department" class="form-control" id="department" onchange="loadSpecialties()" required>
+                                    <option value="">Select Department</option>
+                                    {% for department in departments %}
+                                    <option value="{{ department.department_id }}">{{ department.department_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-2 col-form-label" for="specialty">Specialty</label>
+                            <div class="col-sm-10">
+                                <select name="specialty" class="form-control" id="specialty" required>
+                                    <option value="">Select Specialty</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row justify-content-end">
+                            <div class="col-sm-10">
+                                <button type="submit" class="btn btn-primary">Register</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function loadSpecialties() {
+    var department_id = document.getElementById('department').value;
+
+    if (department_id) {
+        fetch(`/get_specialties?department_id=${department_id}`)
+            .then(response => response.json())
+            .then(data => {
+                var specialtySelect = document.getElementById('specialty');
+                specialtySelect.innerHTML = '<option value="">Select Specialty</option>';  // Clear previous options
+                data.forEach(function(specialty) {
+                    var option = document.createElement('option');
+                    option.value = specialty.specialty_id;
+                    option.textContent = specialty.specialty_name;
+                    specialtySelect.appendChild(option);
+                });
+            });
+    }
+}
+</script>
+
+
+
+
+
+
+
+{% include "nav/footer.html" %}
+

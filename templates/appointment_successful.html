@@ -1,0 +1,38 @@
+{% include "nav/header.html" %}
+
+<div class="content-wrapper">
+  <div class="container-xxl flex-grow-1 container-p-y">
+    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Appointment</span> Successful</h4>
+    <h6 class="pb-1 mb-4 text-muted">Details of the appointment</h6>
+
+    <!-- Display Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="alert-container">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="row mb-5">
+      <div class="col-md-6 col-lg-4 mb-3">
+        <div class="card">
+          <div class="card-header">Doctor: {{ appointment_details.doctor_name }}</div>
+          <div class="card-body">
+            <h5 class="card-title">Patient: {{ appointment_details.patient_name }}</h5>
+            <p class="card-text">Date: {{ appointment_details.appointment_date }}</p>
+            <p class="card-text">Time: {{ appointment_details.appointment_time }}</p>
+            <a href="/book_appointment" class="btn btn-primary">Return to Booking</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% include "nav/footer.html" %}
