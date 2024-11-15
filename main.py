@@ -604,6 +604,27 @@ def cancel_appointment():
 
     return redirect('/appointments')
 
+@app.route('/view_cancellations', methods=['GET'])
+def view_cancellations():
+    try:
+        query = """
+            SELECT C.cancellation_id, A.appointment_id, P.name AS patient_name, D.name AS doctor_name,
+                   C.cancellation_date, C.reason, R.name AS cancelled_by
+            FROM Cancellations C
+            JOIN Appointments A ON C.appointment_id = A.appointment_id
+            JOIN Patients P ON A.patient_id = P.patient_id
+            JOIN Doctors D ON A.doctor_id = D.doctor_id
+            LEFT JOIN Receptionists R ON C.cancelled_by = R.receptionist_id
+            ORDER BY C.cancellation_date DESC
+        """
+        cursor.execute(query)
+        cancellations = cursor.fetchall()
+
+    except mysql.connector.Error as e:
+        flash("An error occurred while fetching cancellations.", "error")
+        cancellations = []
+
+    return render_template('view_cancellations.html', cancellations=cancellations)
 
 if __name__ == '__main__':
     app.run(debug=True)
