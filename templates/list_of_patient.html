@@ -1,0 +1,58 @@
+{% include "nav/header_doctor.html" %}
+
+
+
+<div class="container mt-5">
+    <h2>List of patient</h2>
+    <!-- Display Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="alert-container">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Contact</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for patient in patients %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ patient.name }}</td>
+                <td>{{ patient.contact_number }}</td>
+                <td>{{ patient.status }}</td>
+                <td>
+                    <a href="{{ url_for('patient_prescription', patient_id=patient.patient_id) }}" class="btn btn-primary btn-sm">
+                        View Prescription
+                    </a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="text-center">No patients found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+
+</div>
+
+
+{% include "nav/footer.html" %}

@@ -1,5 +1,7 @@
 import random
 from datetime import datetime, timedelta, date, time
+from pydoc import html
+
 from flask import Flask, render_template, request, redirect, flash, url_for, jsonify, session
 from werkzeug.security import generate_password_hash, check_password_hash
 import mysql.connector
@@ -30,6 +32,29 @@ def index():
         return "Welcome to Dashboard"
     else:
         return redirect(url_for('auth_login'))
+
+@app.route('/index_doctor')
+def index_doctor():
+    try:
+        # Check if user is logged in and has 'doctor' role
+        if 'doctor_id' in session and 'role' in session and session['role'] == 'doctor':
+            doctor_id = session['doctor_id']
+
+            # Fetch doctor details from the database
+            cursor.execute("SELECT name, contact_number, email, status FROM Doctors WHERE doctor_id = %s", (doctor_id,))
+            doctor = cursor.fetchone()
+
+            if doctor:
+                return render_template('index_doctor.html', doctor=doctor)
+            else:
+                flash('Doctor not found', 'error')
+                return redirect(url_for('index_doctor'))
+        else:
+            flash('You need to log in as a doctor to view this page', 'error')
+            return redirect(url_for('auth_login'))  # Assuming there is a login page
+    except Exception as e:
+        flash(f'Error: {str(e)}', 'error')
+        return redirect(url_for('index_doctor'))
 
 
 @app.route('/reg_receptionists', methods=['GET', 'POST'])
@@ -281,14 +306,14 @@ def auth_login():
                     cursor.execute("SELECT doctor_id FROM doctors WHERE user_id = %s", (user['user_id'],))
                     doctor = cursor.fetchone()
                     session['doctor_id'] = doctor['doctor_id'] if doctor else None
-                    return redirect(url_for('doctor_dashboard'))
+                    return redirect(url_for('index_doctor'))
 
                 elif user['role'] == 'receptionist':
                     # Fetch receptionist_id for the logged-in user
                     cursor.execute("SELECT receptionist_id FROM receptionists WHERE user_id = %s", (user['user_id'],))
                     receptionist = cursor.fetchone()
                     session['receptionist_id'] = receptionist['receptionist_id'] if receptionist else None
-                    return redirect(url_for('receptionist_dashboard'))
+                    return redirect(url_for('appointments'))
 
             else:
                 flash("Invalid email/username or password", 'danger')
@@ -312,7 +337,7 @@ def patient_dashboard():
 @app.route('/doctor_dashboard')
 def doctor_dashboard():
     if session.get('role') == 'doctor':
-        return "Welcome to Doctor Dashboard"
+        return "Welcome to doctor Dashboard"
     else:
         return redirect(url_for('auth_login'))
 
@@ -544,7 +569,8 @@ def list_appointments():
             FROM Appointments A
             JOIN Patients P ON A.patient_id = P.patient_id
             JOIN Doctors D ON A.doctor_id = D.doctor_id
-            WHERE (P.name LIKE %s OR %s = '')
+            WHERE A.status = 'booked'
+            AND (P.name LIKE %s OR %s = '')
             AND (D.name LIKE %s OR %s = '')
             AND (A.appointment_date = %s OR %s = '')
             AND (A.appointment_time = %s OR %s = '')
@@ -568,63 +594,106 @@ def list_appointments():
 @app.route('/cancel_appointment', methods=['POST'])
 def cancel_appointment():
     try:
-        appointment_id = request.form.get('appointment_id')
-        reason = request.form.get('reason')
+        appointment_id = request.form['appointment_id']
+        cancel_reason = request.form['cancel_reason']
 
-        # Debugging logs
-        print(f"Canceling appointment ID: {appointment_id}, Reason: {reason}")
-
-        if not appointment_id:
-            flash("Appointment ID is missing.", "error")
-            return redirect('/appointments')
-
-        # Check if appointment exists
-        check_query = "SELECT * FROM Appointments WHERE appointment_id = %s"
-        print(f"Executing query: {check_query} with params: {(appointment_id,)}")
-        cursor.execute(check_query, (appointment_id,))
-        result = cursor.fetchone()
-
-        if not result:
-            print(f"No appointment found with ID: {appointment_id}")
-            flash("Appointment not found.", "error")
-            return redirect('/appointments')
-
-        # Update query
-        update_query = "UPDATE Appointments SET status = 'cancelled', cancel_reason = %s WHERE appointment_id = %s"
-        print(f"Executing update query: {update_query} with params: {(reason, appointment_id)}")
-        cursor.execute(update_query, (reason, appointment_id))
-
-        # Commit transaction
+        # Update the status and reason in the database
+        query = """
+            UPDATE Appointments 
+            SET status = 'cancelled', cancel_reason = %s 
+            WHERE appointment_id = %s
+        """
+        cursor.execute(query, (cancel_reason, appointment_id))
         mysql.commit()
-        print("Commit successful.")
-        flash("Appointment successfully cancelled.", "success")
-    except mysql.connector.Error as e:
-        print(f"Error: {e}")
-        flash("An error occurred while cancelling the appointment.", "error")
 
-    return redirect('/appointments')
+        return jsonify({'success': True, 'message': 'Appointment cancelled successfully!'})
+    except mysql.connector.Error as e:
+        return jsonify({'success': False, 'message': str(e)})
+
 
 @app.route('/view_cancellations', methods=['GET'])
 def view_cancellations():
     try:
+        # Filters for searching
+        search_patient = request.args.get('search_patient', '')
+        search_doctor = request.args.get('search_doctor', '')
+        search_date = request.args.get('search_date', '')
+        search_time = request.args.get('search_time', '')
+
+        # SQL query with search filters
         query = """
-            SELECT C.cancellation_id, A.appointment_id, P.name AS patient_name, D.name AS doctor_name,
-                   C.cancellation_date, C.reason, R.name AS cancelled_by
-            FROM Cancellations C
-            JOIN Appointments A ON C.appointment_id = A.appointment_id
-            JOIN Patients P ON A.patient_id = P.patient_id
-            JOIN Doctors D ON A.doctor_id = D.doctor_id
-            LEFT JOIN Receptionists R ON C.cancelled_by = R.receptionist_id
-            ORDER BY C.cancellation_date DESC
-        """
-        cursor.execute(query)
-        cancellations = cursor.fetchall()
+               SELECT A.appointment_id, P.name AS patient_name, D.name AS doctor_name, 
+                      A.appointment_date, A.appointment_time, A.status, A.cancel_reason
+               FROM Appointments A
+               JOIN Patients P ON A.patient_id = P.patient_id
+               JOIN Doctors D ON A.doctor_id = D.doctor_id
+               WHERE A.status = 'cancelled'
+               AND (P.name LIKE %s OR %s = '')
+               AND (D.name LIKE %s OR %s = '')
+               AND (A.appointment_date = %s OR %s = '')
+               AND (A.appointment_time = %s OR %s = '')
+               ORDER BY A.appointment_date DESC, A.appointment_time DESC
+           """
+        cursor.execute(query, (
+            f"%{search_patient}%", search_patient,
+            f"%{search_doctor}%", search_doctor,
+            search_date, search_date,
+            search_time, search_time
+        ))
+        view_cancellations = cursor.fetchall()
 
     except mysql.connector.Error as e:
-        flash("An error occurred while fetching cancellations.", "error")
-        cancellations = []
+        flash("An error occurred while fetching the appointments.", "error")
+        view_cancellations = []
 
-    return render_template('view_cancellations.html', cancellations=cancellations)
+    return render_template('view_cancellations.html', cancellations=view_cancellations)
+
+@app.route('/list_of_patient')
+def list_of_patient():
+    try:
+        query = "SELECT patient_id, name, contact_number, status FROM Patients"
+        cursor.execute(query)
+        patients = cursor.fetchall()
+        return render_template('list_of_patient.html', patients=patients)
+    except Exception as e:
+        flash(f"Error: {e}", "danger")
+        return redirect(url_for('list_of_patient'))
+
+
+# Patient Prescription
+@app.route('/patient_prescription/<int:patient_id>', methods=['GET', 'POST'])
+def patient_prescription(patient_id):
+    try:
+        if request.method == 'POST':
+            # Add new prescription
+            doctor_id = session.get('doctor_id')
+            medication_details = html.escape(request.form['medication_details'])
+            dosage = html.escape(request.form['dosage'])
+            date_issued = request.form['date_issued']
+
+            query = """
+                INSERT INTO Prescriptions (patient_id, doctor_id, medication_details, dosage, date_issued)
+                VALUES (%s, %s, %s, %s, %s)
+            """
+            cursor.execute(query, (patient_id, doctor_id, medication_details, dosage, date_issued))
+            mysql.commit()
+            flash("Prescription added successfully!", "success")
+
+        # Fetch existing prescriptions
+        query = """
+            SELECT prescription_id, medication_details, dosage, date_issued
+            FROM Prescriptions
+            WHERE patient_id = %s
+        """
+        cursor.execute(query, (patient_id,))
+        prescriptions = cursor.fetchall()
+
+        return render_template('patient_prescription.html', prescriptions=prescriptions, patient_id=patient_id)
+    except Exception as e:
+        flash(f"Error: {e}", "danger")
+        return redirect(url_for('list_of_patient'))
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

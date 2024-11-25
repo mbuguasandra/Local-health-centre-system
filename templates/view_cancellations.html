@@ -1,4 +1,4 @@
-{% include "nav/header.html" %}
+{% include "nav/header_receptionists.html" %}
 
 <div class="container mt-5">
     <h2>Appointments</h2>
@@ -12,33 +12,31 @@
 
     <table class="table table-bordered">
     <thead>
-        <tr>
-            <th>#</th>
-            <th>Appointment ID</th>
-            <th>Patient Name</th>
-            <th>Doctor Name</th>
-            <th>Cancellation Date</th>
-            <th>Reason</th>
-            <th>Cancelled By</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for cancellation in cancellations %}
-        <tr>
-            <td>{{ loop.index }}</td>
-            <td>{{ cancellation.appointment_id }}</td>
-            <td>{{ cancellation.patient_name }}</td>
-            <td>{{ cancellation.doctor_name }}</td>
-            <td>{{ cancellation.cancellation_date }}</td>
-            <td>{{ cancellation.reason }}</td>
-            <td>{{ cancellation.cancelled_by or 'Self' }}</td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="7" class="text-center">No cancellations found</td>
-        </tr>
-        {% endfor %}
-    </tbody>
+            <tr>
+                <th>#</th>
+                <th>Patient Name</th>
+                <th>Doctor Name</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Reason for Cancellation</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cancellation in cancellations %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ cancellation.patient_name }}</td>
+                <td>{{ cancellation.doctor_name }}</td>
+                <td>{{ cancellation.appointment_date }}</td>
+                <td>{{ cancellation.appointment_time }}</td>
+                <td>{{ cancellation.cancel_reason }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" class="text-center">No cancelled appointments found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
 </table>
 
 </div>

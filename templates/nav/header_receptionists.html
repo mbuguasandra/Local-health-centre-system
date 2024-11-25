@@ -16,7 +16,7 @@
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
     />
 
-    <title>Horizontal Layouts - Forms | Sneat - Bootstrap 5 HTML Admin Template - Pro</title>
+    <title>Grandline Health Hub</title>
 
     <meta name="description" content="" />
 
@@ -33,6 +33,8 @@
 
     <!-- Icons. Uncomment required icon fonts -->
     <link rel="stylesheet" href="{{ url_for('static', filename='assets/vendor/fonts/boxicons.css')}}" />
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font/css/materialdesignicons.min.css" rel="stylesheet"/>
+
 
     <!-- Core CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='assets/vendor/css/core.css')}}" class="template-customizer-core-css" />
@@ -47,7 +49,7 @@
     <!-- Helpers -->
     <script src="{{ url_for('static', filename='assets/vendor/js/helpers.js')}}"></script>
 
-    <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
+  
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
     <script src="{{ url_for('static', filename='assets/js/config.js')}}"></script>
   </head>
@@ -129,40 +131,64 @@
           <ul class="menu-inner py-1">
             <!-- Dashboard -->
             <li class="menu-item">
-              <a href="index.html" class="menu-link">
+              <a href="appointments" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-home-circle"></i>
                 <div data-i18n="Analytics">Dashboard</div>
               </a>
             </li>
 
-            <li class="menu-item">
-              <a href="index.html" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-home-circle"></i>
-                <div data-i18n="Analytics">Dashboard</div>
+           <li class="menu-item">
+            <a href="reg_patient" class="menu-link">
+               <i class='menu-icon tf-icons bx bxs-user-detail'></i>
+              <div data-i18n="Analytics"> Register Patients</div>
+              </a>
+            </li>
+
+
+              <li class="menu-item">
+              <a href="reg_receptionists" class="menu-link">
+                <i class=' menu-icon tf-icons bx bx-user-circle'></i>
+                <div data-i18n="Analytics"> Register receptionist</div>
               </a>
             </li>
 
             <li class="menu-item">
-              <a href="index.html" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-home-circle"></i>
-                <div data-i18n="Analytics">Dashboard</div>
+              <a href="book_appointment" class="menu-link">
+                <i class=' menu-icon tf-icons bx bx-book-add'></i>
+                <div data-i18n="Analytics"> Book Appointments</div>
               </a>
             </li>
 
             <li class="menu-item">
-              <a href="index.html" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-home-circle"></i>
-                <div data-i18n="Analytics">Dashboard</div>
+              <a href="appointments" class="menu-link">
+                <i class='menu-icon tf-icons bx bxs-no-entry' ></i>
+                <div data-i18n="Analytics">View Appointments</div>
               </a>
             </li>
+
+             <li class="menu-item">
+              <a href="view_cancellations" class="menu-link">
+                <i class='  menu-icon tf-icons bx bx-street-view' ></i>
+                <div data-i18n="Analytics">view cancellations</div>
+              </a>
+             </li>
+
+            <li class="menu-item">
+              <a href="reg_doctor" class="menu-link">
+                <i class=' menu-icon tf-icons bx bx-plus-medical' ></i>
+                <div data-i18n="Analytics"> Register Doctors</div>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="logout" class="menu-link">
+                <i class=' menu-icon tf-icons bx bx-log-out-circle' ></i>
+                <div data-i18n="Analytics"> logout</div>
+              </a>
+            </li>
+
 
             <!-- Layouts -->
-            <li class="menu-item">
-              <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-layout"></i>
-                <div data-i18n="Layouts">Layouts</div>
-              </a>
-            </li>
+
 
 
           </ul>

@@ -1,0 +1,70 @@
+{% include "nav/header_doctor.html" %}
+<div class="container mt-5">
+    <h2>List of patient</h2>
+    <!-- Display Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="alert-container">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <h2>Prescriptions for Patient ID: {{ patient_id }}</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Medication</th>
+                <th>Dosage</th>
+                <th>Date Issued</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prescription in prescriptions %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ prescription.medication_details }}</td>
+                <td>{{ prescription.dosage }}</td>
+                <td>{{ prescription.date_issued }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" class="text-center">No prescriptions found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <form method="post">
+        <h3>Add Prescription</h3>
+        <div class="form-group">
+            <label for="medication_details">Medication Details</label>
+            <textarea name="medication_details" class="form-control" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="dosage">Dosage</label>
+            <input type="text" name="dosage" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="date_issued">Date Issued</label>
+            <input type="date" name="date_issued" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-success">Add Prescription</button>
+    </form>
+
+<a href="/list_of_patient" class="btn btn-primary btn-sm">
+                        Back to history
+                    </a>
+
+
+
+</div>
+
+
+{% include "nav/footer.html" %}
